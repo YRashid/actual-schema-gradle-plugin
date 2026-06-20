@@ -1,0 +1,23 @@
+.gradle/
+build/
+out/
+
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Local Gradle settings and publication credentials
+gradle-local.properties
+gradle.properties.local
+local.gradle.properties
+local.properties
+.env
+.env.*
+!.env.example
+
+# Testcontainers/Docker local state
+.testcontainers.properties
+testcontainers.properties
+docker-compose.override.yml
