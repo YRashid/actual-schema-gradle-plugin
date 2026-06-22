@@ -30,6 +30,16 @@ import javax.inject.Inject
     because = "The output is produced by an external Docker image tag, which may be mutable; Gradle up-to-date checks still apply"
 )
 abstract class GenerateActualSchemaTask : DefaultTask() {
+    init {
+        // Included files next to a changelog outside resourceBaseDir are resolved at runtime but
+        // cannot be declared precisely as inputs. Always rerun in that uncommon configuration.
+        outputs.upToDateWhen {
+            val resourceRoot = resourceBaseDir.get().asFile.toPath().toAbsolutePath().normalize()
+            val changelog = changelogFile.get().asFile.toPath().toAbsolutePath().normalize()
+            changelog.startsWith(resourceRoot)
+        }
+    }
+
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val changelogFile: RegularFileProperty

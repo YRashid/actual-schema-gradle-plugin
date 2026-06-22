@@ -5,27 +5,50 @@ on:
     tags:
       - "v*.*.*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag matching the version in gradle.properties (for example v0.1.1)"
+        required: true
+        type: string
 
 permissions:
   contents: read
+
+concurrency:
+  group: publish-gradle-plugin
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify release version
+        shell: bash
+        run: |
+          project_version="$(./gradlew properties --console=plain -q | sed -n 's/^version: //p')"
+          if [[ "v${project_version}" != "${RELEASE_TAG}" ]]; then
+            echo "Release tag ${RELEASE_TAG} does not match project version ${project_version}." >&2
+            exit 1
+          fi
+
+      - name: Verify Docker
+        run: docker info
 
       - name: Run checks
         run: ./gradlew clean check --configuration-cache

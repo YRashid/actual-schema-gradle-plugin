@@ -1,0 +1,63 @@
+name: Bug report
+description: Report reproducible incorrect behavior or a failure
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to provide a reproducible report.
+
+  - type: checkboxes
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I removed credentials and other sensitive data from logs and examples.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Minimal reproduction
+      description: Include the smallest build configuration and changelog that reproduce the issue, or link to a repository.
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Plugin version
+      placeholder: 0.1.1
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Environment
+      description: Include Gradle, Java, Docker, PostgreSQL image, host OS, and architecture versions.
+      placeholder: |
+        Gradle: 9.5.1
+        Java: 17.0.x
+        Docker: 28.x
+        PostgreSQL image: postgres:16
+        OS/architecture: Ubuntu 24.04 / amd64
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Relevant logs
+      description: Paste the relevant failure and stack trace. Logs are rendered as code automatically.
+      render: shell
+
+  - type: textarea
+    attributes:
+      label: Additional context
+

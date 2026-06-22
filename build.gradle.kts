@@ -4,6 +4,7 @@ plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
     id("com.gradle.plugin-publish") version "2.1.1"
+    id("org.jetbrains.dokka-javadoc") version "2.2.0"
 }
 
 java {
@@ -17,9 +18,9 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.liquibase:liquibase-core:4.24.0")
+    implementation("org.liquibase:liquibase-core:4.33.0")
     implementation("org.postgresql:postgresql:42.7.11")
-    implementation("org.testcontainers:postgresql:1.20.1")
+    implementation("org.testcontainers:testcontainers-postgresql:2.0.5")
 
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
@@ -98,6 +99,11 @@ val functionalTest by tasks.registering(Test::class) {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.named<Jar>("javadocJar") {
+    dependsOn(tasks.dokkaGeneratePublicationJavadoc)
+    from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
 }
 
 tasks.check {

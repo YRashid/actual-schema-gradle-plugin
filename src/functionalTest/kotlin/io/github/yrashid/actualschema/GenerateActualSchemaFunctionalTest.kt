@@ -53,6 +53,7 @@ class GenerateActualSchemaFunctionalTest {
         Files.writeString(output, Files.readString(output) + "-- stale snapshot\n")
         val staleResult = runner("checkActualSchema", "--configuration-cache").buildAndFail()
         assertTrue(staleResult.output.contains("Actual database schema is out of date"))
+        assertTrue(staleResult.output.contains("check/schema.sql"))
         assertTrue(staleResult.output.contains("generateActualSchema"))
     }
 
@@ -74,6 +75,18 @@ class GenerateActualSchemaFunctionalTest {
 
         assertTrue(result.output.contains("missing.yml"))
         assertTrue(result.output.contains("doesn't exist") || result.output.contains("not found"))
+    }
+
+    @Test
+    fun `check reports a missing expected snapshot with the update command`() {
+        val dockerAvailable = runCatching { DockerClientFactory.instance().isDockerAvailable }.getOrDefault(false)
+        assumeTrue(dockerAvailable, "Docker is required for the functional test")
+        writeProject(System.getenv("ACTUAL_SCHEMA_TEST_POSTGRES_IMAGE") ?: "postgres:16")
+
+        val result = runner("checkActualSchema", "--configuration-cache").buildAndFail()
+
+        assertTrue(result.output.contains("Expected schema snapshot does not exist"))
+        assertTrue(result.output.contains("generateActualSchema"))
     }
 
     private fun writeProject(image: String) {

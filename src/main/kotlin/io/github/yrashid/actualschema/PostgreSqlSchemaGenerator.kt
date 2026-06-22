@@ -13,7 +13,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.postgresql.Driver
 import org.testcontainers.DockerClientFactory
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.io.File
 import java.sql.Connection
@@ -53,7 +53,7 @@ internal class PostgreSqlSchemaGenerator(
         verifyDocker()
         val imageName = DockerImageName.parse(config.image)
             .asCompatibleSubstituteFor(config.imageCompatibleSubstituteFor)
-        val container = ActualSchemaPostgreSQLContainer(imageName)
+        val container = PostgreSQLContainer(imageName)
             .withDatabaseName(config.databaseName)
             .withUsername(config.username)
             .withPassword(config.password)
@@ -104,9 +104,9 @@ internal class PostgreSqlSchemaGenerator(
         }
     }
 
-    @Suppress("DEPRECATION") // Liquibase 4.24's stable Java facade marks update overloads deprecated.
+    @Suppress("DEPRECATION") // Liquibase 4.x keeps this stable Java facade overload deprecated.
     private fun applyLiquibase(
-        container: ActualSchemaPostgreSQLContainer,
+        container: PostgreSQLContainer,
         config: PostgreSqlGenerationConfig
     ) {
         logger.lifecycle("Applying Liquibase changelog {}", config.changelog)
@@ -147,7 +147,7 @@ internal class PostgreSqlSchemaGenerator(
     }
 
     private fun runPgDump(
-        container: ActualSchemaPostgreSQLContainer,
+        container: PostgreSQLContainer,
         config: PostgreSqlGenerationConfig
     ): String {
         val command = mutableListOf(
@@ -208,6 +208,3 @@ internal fun normalizePgDump(dump: String): String = dump
     .filterNot { it.startsWith("\\unrestrict ") }
     .joinToString("\n")
     .trimEnd() + "\n"
-
-private class ActualSchemaPostgreSQLContainer(imageName: DockerImageName) :
-    PostgreSQLContainer<ActualSchemaPostgreSQLContainer>(imageName)

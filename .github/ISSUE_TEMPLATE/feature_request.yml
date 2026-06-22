@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest a focused improvement to the plugin
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: checkboxes
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and the roadmap for a similar request.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Problem
+      description: What workflow or limitation are you trying to improve?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed behavior
+      description: Describe the desired user-facing behavior and configuration, if any.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternatives considered
+
+  - type: textarea
+    attributes:
+      label: Additional context
+
