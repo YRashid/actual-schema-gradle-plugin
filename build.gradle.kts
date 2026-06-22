@@ -18,12 +18,12 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.liquibase:liquibase-core:4.33.0")
+    implementation("org.liquibase:liquibase-core:5.0.3")
     implementation("org.postgresql:postgresql:42.7.11")
     implementation("org.testcontainers:testcontainers-postgresql:2.0.5")
 
     testImplementation(gradleTestKit())
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
