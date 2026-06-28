@@ -3,6 +3,7 @@
 [English](README.md) | [Русский](README.ru.md)
 
 [![CI](https://github.com/YRashid/actual-schema-gradle-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/YRashid/actual-schema-gradle-plugin/actions/workflows/ci.yml)
+[![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/io.github.yrashid.actual-schema)](https://plugins.gradle.org/plugin/io.github.yrashid.actual-schema)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 `io.github.yrashid.actual-schema` generates the final PostgreSQL DDL produced by your Liquibase
@@ -40,9 +41,12 @@ Kotlin DSL:
 
 ```kotlin
 plugins {
-    id("io.github.yrashid.actual-schema") version "0.1.1"
+    id("io.github.yrashid.actual-schema") version "0.1.2"
 }
 ```
+
+Published versions are listed on the
+[Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.yrashid.actual-schema).
 
 ### 2. Point the plugin to your changelog
 
@@ -88,7 +92,7 @@ Configure Spring Boot and the plugin to use the same root changelog:
 plugins {
     id("org.springframework.boot") version "<your Spring Boot version>"
     id("io.spring.dependency-management") version "<compatible version>"
-    id("io.github.yrashid.actual-schema") version "0.1.1"
+    id("io.github.yrashid.actual-schema") version "0.1.2"
 }
 
 dependencies {
@@ -126,7 +130,7 @@ git add database/schema.sql
 
 The application and the plugin configure Liquibase independently. If your application uses
 contexts, labels, or changelog parameters, configure the same values in `actualSchema` as shown
-below. The plugin currently runs migrations with Liquibase 4.33.0.
+below. The plugin currently runs migrations with Liquibase 5.0.3.
 
 ## Tasks
 
@@ -156,13 +160,14 @@ For this task to be useful, configure `outputFile` outside `build/`, for example
 
 ## Configuration
 
-### Output file, schemas, and PostgreSQL image
+### Output file, schemas, PostgreSQL image, and startup timeout
 
 ```kotlin
 actualSchema {
     outputFile.set(layout.projectDirectory.file("database/schema.sql"))
 
     postgresImage.set("postgres:16")
+    postgresStartupTimeoutSeconds.set(60)
     schemas.set(listOf("public", "reporting"))
     excludeTables.set(setOf("public.audit_log"))
 
@@ -209,6 +214,7 @@ using Liquibase's default selection behavior.
 | `outputFile` | `build/generated/actual-schema/schema.sql` | Generated schema snapshot |
 | `postgresImage` | `postgres:16` | PostgreSQL-compatible container image |
 | `postgresImageCompatibleSubstituteFor` | `postgres` | Canonical image name used by Testcontainers |
+| `postgresStartupTimeoutSeconds` | `60` | Startup timeout for the temporary PostgreSQL container |
 | `databaseName` | `actual_schema` | Name of the temporary database |
 | `username` / `password` | `actual_schema` | Credentials used only for the temporary database |
 | `schemas` | `public` | Schemas passed to `pg_dump`; empty means all schemas |
@@ -218,8 +224,10 @@ using Liquibase's default selection behavior.
 | `liquibaseParameters` | empty | Changelog parameters |
 | `liquibaseDefaultSchema` | unset | Default schema used by Liquibase |
 | `liquibaseSchema` | unset | Schema containing Liquibase metadata tables |
+| `liquibaseChangeLogTable` | `databasechangelog` | Name of the Liquibase changelog metadata table |
+| `liquibaseChangeLogLockTable` | `databasechangeloglock` | Name of the Liquibase changelog lock table |
 | `includeLiquibaseTables` | `false` | Include Liquibase metadata tables in the snapshot |
-| `normalizeOutput` | `true` | Remove volatile `pg_dump` output |
+| `normalizeOutput` | `true` | Remove volatile `pg_dump` output and group index-like statements by table |
 
 ## PostgreSQL and PostGIS images
 
@@ -262,7 +270,7 @@ Extensions must be compatible with the Liquibase version used by the plugin.
 
 ```groovy
 plugins {
-    id 'io.github.yrashid.actual-schema' version '0.1.1'
+    id 'io.github.yrashid.actual-schema' version '0.1.2'
 }
 
 actualSchema {
@@ -273,6 +281,7 @@ actualSchema {
     outputFile.set(layout.projectDirectory.file('database/schema.sql'))
 
     postgresImage.set('postgres:16')
+    postgresStartupTimeoutSeconds.set(60)
     schemas.set(['public'])
     excludeTables.set(['public.audit_log'] as Set)
 
@@ -363,6 +372,9 @@ docker pull postgres:16
 Check network access, registry credentials, proxy configuration, the image name, and the requested
 tag. Private registries must be authenticated through Docker before running Gradle.
 
+If the image is available but PostgreSQL starts too slowly on a self-hosted runner, increase
+`postgresStartupTimeoutSeconds`.
+
 ### Liquibase extension is not discovered
 
 Add it to `actualSchemaLiquibaseRuntime`, not only to the application's `implementation`
@@ -371,9 +383,8 @@ configuration.
 ### Plugin cannot be resolved
 
 Confirm that the requested version is visible on the
-[Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.yrashid.actual-schema). The first
-public version remains unavailable to consumer builds until the Portal's initial approval is
-complete.
+[Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.yrashid.actual-schema). If you
+use a newly released version, allow a short time for Gradle caches and mirrors to refresh.
 
 ## Security and trust model
 

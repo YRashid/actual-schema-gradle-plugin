@@ -18,6 +18,7 @@ interface GenerateSchemaWorkParameters : WorkParameters {
     val outputFile: RegularFileProperty
     val postgresImage: Property<String>
     val postgresImageCompatibleSubstituteFor: Property<String>
+    val postgresStartupTimeoutSeconds: Property<Int>
     val databaseName: Property<String>
     val username: Property<String>
     val password: Property<String>
@@ -40,6 +41,7 @@ abstract class GenerateSchemaWorkAction : WorkAction<GenerateSchemaWorkParameter
             resourceBaseDir = parameters.resourceBaseDir.get().asFile,
             image = parameters.postgresImage.get(),
             imageCompatibleSubstituteFor = parameters.postgresImageCompatibleSubstituteFor.get(),
+            startupTimeoutSeconds = parameters.postgresStartupTimeoutSeconds.get(),
             databaseName = parameters.databaseName.get(),
             username = parameters.username.get(),
             password = parameters.password.get(),

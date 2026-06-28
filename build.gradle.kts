@@ -18,12 +18,31 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.liquibase:liquibase-core:4.33.0")
+    implementation("org.liquibase:liquibase-core:5.0.3")
     implementation("org.postgresql:postgresql:42.7.11")
     implementation("org.testcontainers:testcontainers-postgresql:2.0.5")
 
+    constraints {
+        implementation("org.apache.commons:commons-compress:1.28.0") {
+            because("Keep Testcontainers archive handling on a patched baseline")
+        }
+        implementation("org.apache.commons:commons-lang3:3.20.0") {
+            because("Keep Liquibase/OpenCSV transitive utility code on a patched baseline")
+        }
+        implementation("commons-io:commons-io:2.22.0") {
+            because("Keep Liquibase transitive file handling on a patched baseline")
+        }
+        implementation("org.yaml:snakeyaml:2.6") {
+            because("Keep Liquibase YAML parsing on a patched baseline")
+        }
+        implementation("com.opencsv:opencsv:5.12.0") {
+            because("Keep Liquibase CSV parsing on a patched baseline")
+        }
+    }
+
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation(gradleTestKit())
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -88,7 +107,7 @@ configurations[functionalTestSourceSet.runtimeOnlyConfigurationName]
 
 gradlePlugin.testSourceSets(functionalTestSourceSet)
 
-val functionalTest by tasks.registering(Test::class) {
+val functionalTest = tasks.register<Test>("functionalTest") {
     description = "Runs Gradle TestKit functional tests (Docker is required)."
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     testClassesDirs = functionalTestSourceSet.output.classesDirs

@@ -20,6 +20,9 @@ abstract class ActualSchemaExtension {
     /** PostgreSQL-compatible Docker image used for generation. */
     abstract val postgresImage: Property<String>
 
+    /** How long to wait for the temporary PostgreSQL container to start. */
+    abstract val postgresStartupTimeoutSeconds: Property<Int>
+
     /** Temporary database name. */
     abstract val databaseName: Property<String>
 

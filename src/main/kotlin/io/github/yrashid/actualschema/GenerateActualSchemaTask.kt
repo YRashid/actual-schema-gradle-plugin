@@ -61,6 +61,9 @@ abstract class GenerateActualSchemaTask : DefaultTask() {
     abstract val postgresImageCompatibleSubstituteFor: Property<String>
 
     @get:Input
+    abstract val postgresStartupTimeoutSeconds: Property<Int>
+
+    @get:Input
     abstract val databaseName: Property<String>
 
     @get:Input
@@ -110,6 +113,7 @@ abstract class GenerateActualSchemaTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
+        validateConfiguration()
         val changelog = changelogFile.get().asFile
         validateChangelog(changelog)
         val destination = outputFile.get().asFile
@@ -128,6 +132,7 @@ abstract class GenerateActualSchemaTask : DefaultTask() {
                 postgresImageCompatibleSubstituteFor.set(
                     this@GenerateActualSchemaTask.postgresImageCompatibleSubstituteFor
                 )
+                postgresStartupTimeoutSeconds.set(this@GenerateActualSchemaTask.postgresStartupTimeoutSeconds)
                 databaseName.set(this@GenerateActualSchemaTask.databaseName)
                 username.set(this@GenerateActualSchemaTask.username)
                 password.set(this@GenerateActualSchemaTask.password)
@@ -147,6 +152,36 @@ abstract class GenerateActualSchemaTask : DefaultTask() {
             logger.lifecycle("Actual PostgreSQL schema written to {}", destination)
         } finally {
             Files.deleteIfExists(temporaryPath)
+        }
+    }
+
+    private fun validateConfiguration() {
+        requireNonBlank(postgresImage.get(), "postgresImage")
+        requireNonBlank(postgresImageCompatibleSubstituteFor.get(), "postgresImageCompatibleSubstituteFor")
+        requirePositive(postgresStartupTimeoutSeconds.get(), "postgresStartupTimeoutSeconds")
+        requireNonBlank(databaseName.get(), "databaseName")
+        requireNonBlank(username.get(), "username")
+        requireNonBlank(password.get(), "password")
+        schemas.get().forEach { requireNonBlank(it, "schemas") }
+        excludeTables.get().forEach { requireNonBlank(it, "excludeTables") }
+        liquibaseContexts.get().forEach { requireNonBlank(it, "liquibaseContexts") }
+        liquibaseLabels.get().forEach { requireNonBlank(it, "liquibaseLabels") }
+        liquibaseParameters.get().keys.forEach { requireNonBlank(it, "liquibaseParameters key") }
+        liquibaseDefaultSchema.orNull?.let { requireNonBlank(it, "liquibaseDefaultSchema") }
+        liquibaseSchema.orNull?.let { requireNonBlank(it, "liquibaseSchema") }
+        requireNonBlank(liquibaseChangeLogTable.get(), "liquibaseChangeLogTable")
+        requireNonBlank(liquibaseChangeLogLockTable.get(), "liquibaseChangeLogLockTable")
+    }
+
+    private fun requireNonBlank(value: String, propertyName: String) {
+        if (value.isBlank()) {
+            throw GradleException("actualSchema.$propertyName must not be blank.")
+        }
+    }
+
+    private fun requirePositive(value: Int, propertyName: String) {
+        if (value <= 0) {
+            throw GradleException("actualSchema.$propertyName must be greater than zero.")
         }
     }
 

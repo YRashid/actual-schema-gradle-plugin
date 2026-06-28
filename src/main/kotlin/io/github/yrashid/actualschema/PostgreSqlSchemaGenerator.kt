@@ -17,6 +17,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.io.File
 import java.sql.Connection
+import java.time.Duration
 import java.util.Properties
 
 /** Execution boundary that allows another database implementation to be added later. */
@@ -31,6 +32,7 @@ internal data class PostgreSqlGenerationConfig(
     val resourceBaseDir: File,
     val image: String,
     val imageCompatibleSubstituteFor: String,
+    val startupTimeoutSeconds: Int,
     val databaseName: String,
     val username: String,
     val password: String,
@@ -49,6 +51,8 @@ internal data class PostgreSqlGenerationConfig(
 internal class PostgreSqlSchemaGenerator(
     private val logger: Logger
 ) : DatabaseSchemaGenerator<PostgreSqlGenerationConfig> {
+    private val pgDumpNormalizer = PgDumpNormalizer()
+
     override fun generate(config: PostgreSqlGenerationConfig): String {
         verifyDocker()
         val imageName = DockerImageName.parse(config.image)
@@ -57,6 +61,7 @@ internal class PostgreSqlSchemaGenerator(
             .withDatabaseName(config.databaseName)
             .withUsername(config.username)
             .withPassword(config.password)
+            .withStartupTimeout(Duration.ofSeconds(config.startupTimeoutSeconds.toLong()))
         var started = false
 
         try {
@@ -104,7 +109,6 @@ internal class PostgreSqlSchemaGenerator(
         }
     }
 
-    @Suppress("DEPRECATION") // Liquibase 4.x keeps this stable Java facade overload deprecated.
     private fun applyLiquibase(
         container: PostgreSQLContainer,
         config: PostgreSqlGenerationConfig
@@ -176,7 +180,7 @@ internal class PostgreSqlSchemaGenerator(
                 "pg_dump failed with exit code ${result.exitCode}: ${result.stderr.trim()}"
             )
         }
-        return if (config.normalizeOutput) normalizePgDump(result.stdout) else result.stdout
+        return if (config.normalizeOutput) pgDumpNormalizer.normalize(result.stdout) else result.stdout
     }
 
     private fun createResourceAccessor(config: PostgreSqlGenerationConfig): CompositeResourceAccessor {
@@ -199,12 +203,3 @@ internal class PostgreSqlSchemaGenerator(
     }
 
 }
-
-internal fun normalizePgDump(dump: String): String = dump
-    .lineSequence()
-    .filterNot { it.startsWith("-- Dumped from database version") }
-    .filterNot { it.startsWith("-- Dumped by pg_dump version") }
-    .filterNot { it.startsWith("\\restrict ") }
-    .filterNot { it.startsWith("\\unrestrict ") }
-    .joinToString("\n")
-    .trimEnd() + "\n"
