@@ -19,7 +19,7 @@ kotlin {
 
 dependencies {
     implementation("org.liquibase:liquibase-core:5.0.3")
-    implementation("org.postgresql:postgresql:42.7.11")
+    implementation("org.postgresql:postgresql:42.7.13")
     implementation("org.testcontainers:testcontainers-postgresql:2.0.5")
 
     constraints {
@@ -40,7 +40,7 @@ dependencies {
         }
     }
 
-    testImplementation(platform("org.junit:junit-bom:5.14.4"))
+    testImplementation(platform("org.junit:junit-bom:6.1.2"))
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
