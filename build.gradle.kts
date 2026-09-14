@@ -3,7 +3,7 @@ import org.gradle.plugin.compatibility.compatibility
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
-    id("com.gradle.plugin-publish") version "2.1.1"
+    id("com.gradle.plugin-publish") version "2.2.1"
     id("org.jetbrains.dokka-javadoc") version "2.2.0"
 }
 
@@ -18,8 +18,8 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.liquibase:liquibase-core:5.0.3")
-    implementation("org.postgresql:postgresql:42.7.11")
+    implementation("org.liquibase:liquibase-core:5.0.4")
+    implementation("org.postgresql:postgresql:42.7.13")
     implementation("org.testcontainers:testcontainers-postgresql:2.0.5")
 
     constraints {
@@ -32,7 +32,7 @@ dependencies {
         implementation("commons-io:commons-io:2.22.0") {
             because("Keep Liquibase transitive file handling on a patched baseline")
         }
-        implementation("org.yaml:snakeyaml:2.6") {
+        implementation("org.yaml:snakeyaml:2.7") {
             because("Keep Liquibase YAML parsing on a patched baseline")
         }
         implementation("com.opencsv:opencsv:5.12.0") {
@@ -40,7 +40,7 @@ dependencies {
         }
     }
 
-    testImplementation(platform("org.junit:junit-bom:5.14.4"))
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
